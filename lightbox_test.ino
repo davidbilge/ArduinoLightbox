@@ -1,19 +1,32 @@
 #include "LedControl.h"
+#include <Bounce.h>
 
 #define PIN_DIN 3
 #define PIN_CLK 5
 #define PIN_LOAD 6
+#define PIN_BUTTON 8
 
 #define MAX_INTENSITY 15
 #define MAX_ROW 6
 #define MAX_COL 6
 #define NUM_OF_LEDS (MAX_ROW+1)*(MAX_COL+1)
 
+#define PIC_LEN 1
+
 #include "symbols.h"
+#include "picture.h"
 
 LedControl lc = LedControl(PIN_DIN, PIN_CLK, PIN_LOAD, 1);
+Bounce bouncer = Bounce( PIN_BUTTON,5 ); 
+
+int current_picture = 0;
+Picture* pictures[PIC_LEN] = {new H_Lines()};
+
+int msecs = millis();
 
 void setup() {
+  pinMode(PIN_BUTTON, INPUT);
+  
   lc.shutdown(0,false);
   lc.setScanLimit(0, MAX_ROW);
   lc.setIntensity(0, MAX_INTENSITY);
@@ -28,11 +41,30 @@ void setup() {
 
   testCycle();
   
+  for (int i=0; i<PIC_LEN; ++i) {
+    pictures[i]->setup();
+    Serial.println(String("") + "Initialized " + (i+1) + " of " + PIC_LEN + ".");
+  }
+  
   lc.clearDisplay(0);
 }
 
 void loop() {
-
+  bouncer.update();
+  
+  if (bouncer.fallingEdge()) {
+    // Cycle picture
+    current_picture = (++current_picture) % PIC_LEN; 
+  }
+  
+  Picture* p = pictures[current_picture];
+  
+  int msecs_old = msecs;
+  msecs = millis();
+  
+  if ((msecs - msecs_old) >= p->getDelay()) {
+    p->loop();
+  }
 }
 
 void testCycle() {
