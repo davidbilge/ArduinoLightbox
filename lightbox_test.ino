@@ -1,6 +1,7 @@
 #include "constants.h"
 #include "LedControl.h"
 #include <Bounce.h>
+#include <EEPROM.h>
 
 #define PIN_DIN 3
 #define PIN_CLK 5
@@ -13,13 +14,15 @@
 #define SELECTION_TIMEOUT 2000
 #define SELECTION_FLICKER 250
 
+#define SELECTION_PERSISTENCE_ADDR 100
+
 #include "symbols.h"
 #include "picture.h"
 
 LedControl lc = LedControl(PIN_DIN, PIN_CLK, PIN_LOAD, 1);
 Bounce bouncer = Bounce( PIN_BUTTON,5 ); 
 
-int current_picture = 0;
+byte current_picture = 0;
 Picture* p = 0;
 Picture* pictures[PIC_LEN] = {new H_Lines(lc), new H_Lines(lc), new H_Lines(lc)};
 
@@ -35,12 +38,17 @@ void setup() {
   lc.setIntensity(0, MAX_INTENSITY);
   lc.clearDisplay(0);
   
+  current_picture = EEPROM.read(SELECTION_PERSISTENCE_ADDR);
+  if (current_picture >= PIC_LEN) { //If the cell has never been written to before, it defaults to 255
+    current_picture = 0;
+  }
+  
   // startupCycle();
 
 }
 
 void loop() {  
-  static boolean display_menu = true;
+  static boolean display_menu = true; // Set these values to true and -1 to trigger the "menu hiding" once at startup in order to actually display a picture immediately
   static long selection_timer = -1;
   
   long msecs_old = msecs;
@@ -75,6 +83,7 @@ void loop() {
       p->leave();
     }
     p = pictures[current_picture];
+    EEPROM.write(SELECTION_PERSISTENCE_ADDR, current_picture);
     p->enter();
   }
   
