@@ -1,17 +1,15 @@
+#include "constants.h"
 #include "LedControl.h"
 #include <Bounce.h>
 
 #define PIN_DIN 3
 #define PIN_CLK 5
 #define PIN_LOAD 6
-#define PIN_BUTTON 8
+#define PIN_BUTTON 12
 
 #define MAX_INTENSITY 15
-#define MAX_ROW 6
-#define MAX_COL 6
-#define NUM_OF_LEDS (MAX_ROW+1)*(MAX_COL+1)
 
-#define PIC_LEN 1
+#define PIC_LEN 3
 #define SELECTION_TIMEOUT 2000
 #define SELECTION_FLICKER 250
 
@@ -22,19 +20,77 @@ LedControl lc = LedControl(PIN_DIN, PIN_CLK, PIN_LOAD, 1);
 Bounce bouncer = Bounce( PIN_BUTTON,5 ); 
 
 int current_picture = 0;
-Picture* pictures[PIC_LEN] = {new H_Lines()};
+Picture* p = 0;
+Picture* pictures[PIC_LEN] = {new H_Lines(lc), new H_Lines(lc), new H_Lines(lc)};
 
 long msecs = millis();
-long selection_timer = 0;
 
 void setup() {
   pinMode(PIN_BUTTON, INPUT);
+  pinMode(13, OUTPUT);
+  Serial.begin(9600);
   
   lc.shutdown(0,false);
   lc.setScanLimit(0, MAX_ROW);
   lc.setIntensity(0, MAX_INTENSITY);
   lc.clearDisplay(0);
+  
+  // startupCycle();
 
+}
+
+void loop() {  
+  static boolean display_menu = true;
+  static long selection_timer = -1;
+  
+  long msecs_old = msecs;
+  msecs = millis();
+  long delta = msecs - msecs_old;
+  
+  bouncer.update();
+  
+  if (bouncer.fallingEdge()) {
+    digitalWrite(13, LOW);
+    
+    // Cycle picture
+    current_picture = (++current_picture) % PIC_LEN;
+    
+    Serial.println("Current picture: " + String(current_picture));
+    
+    lc.clearDisplay(0);
+    selection_timer = SELECTION_TIMEOUT;
+    display_menu = true;
+  } else if (bouncer.risingEdge()) {
+    digitalWrite(13, HIGH);
+  } else if (bouncer.duration() == 3000) {
+//    testCycle();
+//    lc.clearDisplay(0);
+  }
+  
+  if (display_menu && selection_timer <= 0) {
+    display_menu = false;
+    lc.clearDisplay(0);
+    Serial.println("Hide menu");
+    if (p != 0) {
+      p->leave();
+    }
+    p = pictures[current_picture];
+    p->enter();
+  }
+  
+  if (selection_timer <= 0) {
+    if (delta >= p->getDelay()) {
+      p->loop();
+    }
+  } else {
+    // Display selection "menu"
+    displayMenu(current_picture);
+    
+    selection_timer -= delta;
+  }
+}
+
+void startupCycle() {
   //stack();
 
   lc.clearDisplay(0);
@@ -50,45 +106,6 @@ void setup() {
   }
   
   lc.clearDisplay(0);
-}
-
-void loop() {  
-  static boolean display_menu = false;
-  
-  long msecs_old = msecs;
-  msecs = millis();
-  long delta = msecs - msecs_old;
-  
-  bouncer.update();
-  
-  if (bouncer.fallingEdge()) {
-    // Cycle picture
-    current_picture = (++current_picture) % PIC_LEN;
-    lc.clearDisplay(0);
-    selection_timer = SELECTION_TIMEOUT;
-    display_menu = true;
-  } else if (bouncer.duration() == 3000) {
-    testCycle();
-    lc.clearDisplay(0);
-  }
-  
-  if (display_menu && selection_timer <= 0) {
-    display_menu = false;
-    lc.clearDisplay(0);
-  }
-  
-  if (selection_timer <= 0) {
-    Picture* p = pictures[current_picture];
-    
-    if (delta >= p->getDelay()) {
-      p->loop();
-    }
-  } else {
-    // Display selection "menu"
-    displayMenu(current_picture);
-    
-    selection_timer -= delta;
-  }
 }
 
 void testCycle() {
@@ -114,7 +131,7 @@ void displayMenu(int selectedItem) {
   millis_since_last_change -= delta;
   if (millis_since_last_change <= 0) {
     millis_since_last_change = SELECTION_FLICKER;
-    selectionMode = !selectionMode;
+    selection_mode = !selection_mode;
   }
     
   for (int i=0; i<NUM_OF_LEDS; ++i) {
