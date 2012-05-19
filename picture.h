@@ -8,12 +8,12 @@
 class Picture {
 public:
     Picture(LedControl& lc) : lc(lc) {}
-    virtual void setup() = 0;
+    virtual void setup() {}
     virtual void enter() {}
     virtual void leave() {}
-    virtual void loop() = 0;
-    virtual int getDelay() = 0;
-
+    virtual void loop() {}
+    virtual int getDelay() {return 0;}
+    
 protected:
     LedControl& lc;
 };
@@ -27,6 +27,15 @@ public:
     virtual void leave();
     virtual void loop();
     virtual int getDelay();
+};
+
+class StaticSymbol : public Picture {
+public:
+  StaticSymbol(LedControl& lc, const prog_uint8_t* symbol) : Picture(lc), symbol(symbol) {}
+  virtual void enter();
+  
+private:
+  const prog_uint8_t* symbol;
 };
 
 #endif

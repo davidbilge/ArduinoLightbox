@@ -24,7 +24,7 @@ Bounce bouncer = Bounce( PIN_BUTTON,5 );
 
 byte current_picture = 0;
 Picture* p = 0;
-Picture* pictures[PIC_LEN] = {new H_Lines(lc), new H_Lines(lc), new H_Lines(lc)};
+Picture* pictures[PIC_LEN] = {new H_Lines(lc), new StaticSymbol(lc, A), new StaticSymbol(lc, B)};
 
 long msecs = millis();
 

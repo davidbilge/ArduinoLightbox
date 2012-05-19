@@ -25,3 +25,7 @@ void H_Lines::loop() {
 int H_Lines::getDelay() {
   return 200;
 }
+
+void StaticSymbol::enter() {
+  drawSymbol(lc, symbol, 0);
+}
