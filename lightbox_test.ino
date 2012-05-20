@@ -11,7 +11,7 @@
 
 #define MAX_INTENSITY 15
 
-#define PIC_LEN 9
+#define PIC_LEN 10
 #define SELECTION_TIMEOUT 2000
 #define SELECTION_FLICKER 250
 
@@ -27,6 +27,7 @@ byte current_picture = 0;
 Picture* p = 0;
 Picture* pictures[PIC_LEN] = {
   new H_Lines(lc),
+  new StaticSymbol(lc, special_0),  
   new StaticSymbol(lc, special_1),
   new StaticSymbol(lc, special_2),
   new StaticSymbol(lc, special_3),

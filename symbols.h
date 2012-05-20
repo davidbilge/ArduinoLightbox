@@ -571,6 +571,17 @@ const prog_uint8_t PROGMEM zero[8] = {
     
 // SPECIAL SYMBOLS
     
+const prog_uint8_t PROGMEM special_0[8] = {
+        B1111111,
+        B1111111,
+        B1111111,
+        B1111111,
+        B1111111,
+        B1111111,    
+        B1111111,
+        7
+    };
+    
 const prog_uint8_t PROGMEM special_1[8] = {
         B0000000,
         B1110111,
