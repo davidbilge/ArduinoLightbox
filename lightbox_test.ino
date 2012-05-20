@@ -1,5 +1,6 @@
 #include "constants.h"
 #include "LedControl.h"
+#include "snow.h"
 #include <Bounce.h>
 #include <EEPROM.h>
 
@@ -10,7 +11,7 @@
 
 #define MAX_INTENSITY 15
 
-#define PIC_LEN 3
+#define PIC_LEN 9
 #define SELECTION_TIMEOUT 2000
 #define SELECTION_FLICKER 250
 
@@ -24,7 +25,17 @@ Bounce bouncer = Bounce( PIN_BUTTON,5 );
 
 byte current_picture = 0;
 Picture* p = 0;
-Picture* pictures[PIC_LEN] = {new H_Lines(lc), new StaticSymbol(lc, A), new StaticSymbol(lc, B)};
+Picture* pictures[PIC_LEN] = {
+  new H_Lines(lc),
+  new StaticSymbol(lc, special_1),
+  new StaticSymbol(lc, special_2),
+  new StaticSymbol(lc, special_3),
+  new StaticSymbol(lc, special_4),
+  new StaticSymbol(lc, special_5),
+  new StaticSymbol(lc, special_6),
+  new StaticSymbol(lc, special_7),
+  new Snow(lc)
+};
 
 long msecs = millis();
 
@@ -43,6 +54,11 @@ void setup() {
     current_picture = 0;
   }
   
+  for (int i=0; i<PIC_LEN; ++i) {
+    pictures[i]->setup();
+    Serial.println(String("") + "Initialized " + (i+1) + " of " + PIC_LEN + ".");
+  }
+  
   // startupCycle();
 
 }
@@ -54,6 +70,8 @@ void loop() {
   long msecs_old = msecs;
   msecs = millis();
   long delta = msecs - msecs_old;
+  
+  static long loop_delta = 0;
   
   bouncer.update();
   
@@ -70,9 +88,10 @@ void loop() {
     display_menu = true;
   } else if (bouncer.risingEdge()) {
     digitalWrite(13, HIGH);
-  } else if (bouncer.duration() == 3000) {
-//    testCycle();
-//    lc.clearDisplay(0);
+  } else if (bouncer.duration() == 3000 && bouncer.read()) {
+    testCycle();
+    lc.clearDisplay(0);
+    bouncer.fallingEdge(); // Clear state to avoid picture switching after test
   }
   
   if (display_menu && selection_timer <= 0) {
@@ -88,8 +107,10 @@ void loop() {
   }
   
   if (selection_timer <= 0) {
-    if (delta >= p->getDelay()) {
+    loop_delta += delta;
+    if (loop_delta >= p->getDelay()) {
       p->loop();
+      loop_delta = 0;
     }
   } else {
     // Display selection "menu"
@@ -99,7 +120,7 @@ void loop() {
   }
 }
 
-void startupCycle() {
+void testCycle() {
   //stack();
 
   lc.clearDisplay(0);
@@ -107,17 +128,6 @@ void startupCycle() {
   const prog_uint8_t* ver[13] = {L, i, g, h, t, b, o, x, spc, v, one, dot, zero};
   scrollSymbols(lc, ver, 13, 150);
 
-  testCycle();
-  
-  for (int i=0; i<PIC_LEN; ++i) {
-    pictures[i]->setup();
-    Serial.println(String("") + "Initialized " + (i+1) + " of " + PIC_LEN + ".");
-  }
-  
-  lc.clearDisplay(0);
-}
-
-void testCycle() {
   lightAll(); 
   delay(1000);
   lightEvenRows();
@@ -127,6 +137,9 @@ void testCycle() {
   lightEvenCols();
   delay(1000);
   lightOddCols();
+  delay(1000);
+  
+  lc.clearDisplay(0);
 }
 
 void displayMenu(int selectedItem) {

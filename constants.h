@@ -3,6 +3,10 @@
 
 #define MAX_ROW 6
 #define MAX_COL 6
-#define NUM_OF_LEDS (MAX_ROW+1)*(MAX_COL+1)
+
+#define ROWS MAX_ROW+1
+#define COLS MAX_COL+1 //This must not exceed 8 as framebuffers are implemented with bytes!
+
+#define NUM_OF_LEDS (ROWS)*(COLS)
 
 #endif

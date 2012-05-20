@@ -12,7 +12,7 @@ public:
     virtual void enter() {}
     virtual void leave() {}
     virtual void loop() {}
-    virtual int getDelay() {return 0;}
+    virtual int getDelay() {return 250;}
     
 protected:
     LedControl& lc;

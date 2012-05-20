@@ -569,6 +569,86 @@ const prog_uint8_t PROGMEM zero[8] = {
         4
     };
     
+// SPECIAL SYMBOLS
+    
+const prog_uint8_t PROGMEM special_1[8] = {
+        B0000000,
+        B1110111,
+        B1000101,
+        B1000111,
+        B1000101,
+        B1110101,
+        B0000000,
+        7
+    };
+    
+const prog_uint8_t PROGMEM special_2[8] = {
+        B0011000,
+        B0011000,
+        B1111000,
+        B1111111,
+        B0001111,
+        B0001100,
+        B0001100,
+        7
+    };
+    
+const prog_uint8_t PROGMEM special_3[8] = {
+        B1010101,
+        B0101010,
+        B1010101,
+        B0101010,
+        B1010101,
+        B0101010,
+        B1010101,
+        7
+    };
+
+const prog_uint8_t PROGMEM special_4[8] = {
+        B0111110,
+        B1011101,
+        B1101011,
+        B1110111,
+        B1101011,
+        B1011101,
+        B0111110,
+        7
+    };
+
+const prog_uint8_t PROGMEM special_5[8] = {
+        B1111111,
+        B1110111,
+        B1100011,
+        B1000001,
+        B1100011,
+        B1110111,
+        B1111111,
+        7
+    };
+   
+const prog_uint8_t PROGMEM special_6[8] = {
+        B0001000,
+        B0011100,
+        B0111110,
+        B1111111,
+        B0111110,
+        B0011100,
+        B0001000,
+        7
+    };
+         
+const prog_uint8_t PROGMEM special_7[8] = {
+        B1000001,
+        B0100010,
+        B0010100,
+        B0001000,
+        B0010100,
+        B0100010,
+        B1000001,
+        7
+    };
+    
+    
 void drawSymbol(LedControl& lc, const prog_uint8_t* symbol, int x_offset);
 
 void drawSymbols(LedControl& lc, const prog_uint8_t** symbols, int n_symbols, int x_offset);
